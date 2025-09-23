@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
         
         // Register I/O services
         services.AddSingleton<IConsoleService, ConsoleService>();
+        services.AddSingleton<IFileProcessor, FileProcessor>();
         
         return services;
     }

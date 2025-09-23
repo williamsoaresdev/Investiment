@@ -1,0 +1,247 @@
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-card {
+  margin-bottom: 20px;
+}
+
+.input-section {
+  padding: 20px 0;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.json-input {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.file-upload-area {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+
+  &:hover,
+  &.drag-over {
+    border-color: #2196f3;
+    background-color: #e3f2fd;
+  }
+
+  .upload-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #666;
+    margin-bottom: 10px;
+  }
+
+  p {
+    margin: 5px 0;
+    color: #666;
+  }
+
+  .file-hint {
+    font-size: 12px;
+    color: #999;
+  }
+
+  .format-info {
+    font-size: 11px;
+    color: #777;
+    line-height: 1.4;
+    margin-top: 8px;
+  }
+}
+
+.selected-file {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background-color: #e8f5e8;
+  border-radius: 4px;
+  color: #2e7d32;
+}
+
+.result-card {
+  margin-bottom: 20px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.result-item {
+  display: flex;
+}
+
+.result-month-card {
+  width: 100%;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  .mat-mdc-card-header {
+    padding-bottom: 8px;
+  }
+
+  .month-title {
+    color: white;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .mat-mdc-card-content {
+    padding-top: 0;
+  }
+}
+
+.tax-amount {
+  font-size: 24px;
+  font-weight: bold;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+
+  .currency {
+    font-size: 16px;
+    opacity: 0.8;
+  }
+
+  .amount {
+    font-family: 'Roboto Mono', monospace;
+  }
+}
+
+.examples-card {
+  .mat-expansion-panel {
+    margin-bottom: 10px;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  pre {
+    background: #f5f5f5;
+    border-radius: 4px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 16px 0;
+    
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #333;
+    }
+  }
+
+  .load-example-btn {
+    margin-bottom: 16px;
+  }
+
+  .test-file-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #e3f2fd;
+    border-radius: 4px;
+    color: #1976d2;
+    font-size: 14px;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    padding: 0 10px;
+  }
+  
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .file-upload-area {
+    padding: 30px 15px;
+    
+    .upload-icon {
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+    }
+  }
+}
+
+// Material theme customizations
+:host {
+  .mat-mdc-card {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+  }
+
+  .mat-mdc-raised-button {
+    border-radius: 6px;
+  }
+
+  .mat-mdc-tab-group {
+    margin-bottom: 16px;
+  }
+}
+
+// Loading state
+.calculating {
+  .input-card {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// Success state
+.calculation-success {
+  .result-card {
+    animation: slideIn 0.3s ease-out;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

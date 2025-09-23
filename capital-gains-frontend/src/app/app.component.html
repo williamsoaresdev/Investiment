@@ -1,0 +1,149 @@
+<mat-toolbar color="primary" class="toolbar">
+  <span>Capital Gains Calculator</span>
+</mat-toolbar>
+
+<div class="container">
+  <mat-card class="input-card">
+    <mat-card-header>
+      <mat-card-title>Input Data</mat-card-title>
+      <mat-card-subtitle>Insert your capital gains operations data</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-tab-group>
+        <mat-tab label="Manual Input">
+          <div class="input-section">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Operations JSON</mat-label>
+              <textarea
+                matInput
+                [(ngModel)]="operationsJson"
+                placeholder='[{"operation":"buy", "unit-cost":10.00, "quantity": 100}, {"operation":"sell", "unit-cost":15.00, "quantity": 50}]'
+                rows="6"
+                class="json-input">
+              </textarea>
+              <mat-hint>Enter operations in JSON format</mat-hint>
+            </mat-form-field>
+          </div>
+        </mat-tab>
+
+        <mat-tab label="File Upload">
+          <div class="input-section">
+            <div class="file-upload-area" (click)="fileInput.click()" [class.drag-over]="isDragOver">
+              <input
+                #fileInput
+                type="file"
+                accept=".json,.txt"
+                (change)="onFileSelected($event)"
+                style="display: none">
+              
+              <mat-icon class="upload-icon">cloud_upload</mat-icon>
+              <p>Click to upload or drag and drop</p>
+              <p class="file-hint">JSON files or TXT test scenarios</p>
+              <small class="format-info">
+                • JSON: Single operation set<br>
+                • TXT: Multiple test scenarios (auto-processed)
+              </small>
+            </div>
+            
+            <div *ngIf="selectedFileName" class="selected-file">
+              <mat-icon>attach_file</mat-icon>
+              <span>{{ selectedFileName }}</span>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-raised-button color="primary" (click)="calculateTaxes()" [disabled]="!hasValidInput()">
+        <mat-icon>calculate</mat-icon>
+        Calculate Taxes
+      </button>
+      <button mat-button (click)="clearInput()">
+        <mat-icon>clear</mat-icon>
+        Clear
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card class="result-card" *ngIf="taxResults.length > 0">
+    <mat-card-header>
+      <mat-card-title>Tax Results</mat-card-title>
+      <mat-card-subtitle>Capital gains tax calculated for each operation period</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="results-grid">
+        <div class="result-item" *ngFor="let result of taxResults; let i = index">
+          <mat-card class="result-month-card">
+            <mat-card-header>
+              <mat-card-title class="month-title">Period {{ i + 1 }}</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="tax-amount">
+                <span class="currency">R$</span>
+                <span class="amount">{{ result.tax | number:'1.2-2' }}</span>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-raised-button color="accent" (click)="exportResults()">
+        <mat-icon>download</mat-icon>
+        Export Results
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card class="examples-card">
+    <mat-card-header>
+      <mat-card-title>Examples</mat-card-title>
+      <mat-card-subtitle>Sample operation data formats</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Basic Buy/Sell Operations</mat-panel-title>
+        </mat-expansion-panel-header>
+        
+        <pre><code>{{ examples.basic }}</code></pre>
+        <button mat-stroked-button (click)="loadExample('basic')" class="load-example-btn">
+          <mat-icon>content_copy</mat-icon>
+          Load Example
+        </button>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Complex Operations with Losses</mat-panel-title>
+        </mat-expansion-panel-header>
+        
+        <pre><code>{{ examples.complex }}</code></pre>
+        <button mat-stroked-button (click)="loadExample('complex')" class="load-example-btn">
+          <mat-icon>content_copy</mat-icon>
+          Load Example
+        </button>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Test Scenarios File Format (.txt)</mat-panel-title>
+        </mat-expansion-panel-header>
+        
+        <pre><code>{{ examples.testFile }}</code></pre>
+        <p class="test-file-info">
+          <mat-icon>info</mat-icon>
+          Upload .txt files with multiple scenarios. Comments and invalid lines are automatically filtered out.
+        </p>
+      </mat-expansion-panel>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+
+<router-outlet />

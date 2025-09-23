@@ -217,10 +217,20 @@ public class CapitalGainsController : ControllerBase
                     _logger.LogWarning(ex, "Skipping invalid operation sequence in line: {Line}", line);
                     continue; // Skip lines with invalid operation sequences
                 }
+                catch (InvalidOperationException ex) when (ex.Message.Contains("Cannot sell more stocks than owned"))
+                {
+                    _logger.LogWarning(ex, "Skipping line with invalid sell operation (insufficient stocks): {Line}", line);
+                    continue; // Skip lines with invalid sell operations
+                }
                 catch (ArgumentException ex)
                 {
                     _logger.LogWarning(ex, "Skipping invalid JSON line: {Line}", line);
                     continue; // Skip invalid lines instead of failing
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Unexpected error processing line, skipping: {Line}", line);
+                    continue; // Skip any other errors
                 }
             }
 
