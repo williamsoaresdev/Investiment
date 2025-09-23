@@ -1,0 +1,17 @@
+# Capital Gains Test Scenarios - Corrected
+# Este arquivo contém cenários de teste corrigidos
+
+# Scenario 1 - Case #1 (isenção por valor bruto <= 20000)
+[{"operation":"buy","unit-cost":10.00,"quantity":100},{"operation":"sell","unit-cost":15.00,"quantity":50},{"operation":"sell","unit-cost":15.00,"quantity":50}]
+
+# Scenario 2 - Case #2 (lucro tributável + prejuízo sem imposto)
+[{"operation":"buy","unit-cost":10.00,"quantity":10000},{"operation":"sell","unit-cost":20.00,"quantity":5000},{"operation":"sell","unit-cost":5.00,"quantity":5000}]
+
+# Scenario 3 - Case #3 (deduz prejuízo anterior em venda tributável)
+[{"operation":"buy","unit-cost":10.00,"quantity":10000},{"operation":"sell","unit-cost":5.00,"quantity":5000},{"operation":"sell","unit-cost":20.00,"quantity":3000}]
+
+# Scenario 4 - Case #4 (média ponderada sem lucro/prejuízo)
+[{"operation":"buy","unit-cost":10.00,"quantity":10000},{"operation":"buy","unit-cost":25.00,"quantity":5000},{"operation":"sell","unit-cost":15.00,"quantity":10000}]
+
+# Scenario 5 - Case #5 (lucro tributável após venda anterior no zero-a-zero)
+[{"operation":"buy","unit-cost":10.00,"quantity":10000},{"operation":"buy","unit-cost":25.00,"quantity":5000},{"operation":"sell","unit-cost":15.00,"quantity":10000},{"operation":"sell","unit-cost":25.00,"quantity":5000}]

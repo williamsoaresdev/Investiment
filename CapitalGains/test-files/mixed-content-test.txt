@@ -1,0 +1,29 @@
+# Capital Gains Test Scenarios
+# Este arquivo contém cenários de teste com comentários e linhas inválidas
+# O sistema deve processar apenas os JSONs válidos
+
+==================================================
+Scenario 1 — Case #1 (isenção por valor bruto <= 20000)
+stdin:
+[{"operation":"buy","unit-cost":10.00,"quantity":100},{"operation":"sell","unit-cost":15.00,"quantity":50},{"operation":"sell","unit-cost":15.00,"quantity":50}]
+stdout:
+[{"tax":0.0},{"tax":0.0},{"tax":0.0}]
+
+--------------------------------------------------
+Scenario 2 — Case #2 (lucro tributável + prejuízo sem imposto)
+# Esta linha é um comentário e deve ser ignorada
+[{"operation":"buy","unit-cost":10.00,"quantity":10000},{"operation":"sell","unit-cost":20.00,"quantity":5000},{"operation":"sell","unit-cost":5.00,"quantity":5000}]
+
+--------------------------------------------------
+// Comentário no estilo C++
+[{"operation":"buy","unit-cost":10.00,"quantity":10000},{"operation":"sell","unit-cost":5.00,"quantity":5000},{"operation":"sell","unit-cost":20.00,"quantity":3000}]
+
+Esta linha não é JSON válido e deve ser ignorada
+[{"operation":"buy","unit-cost":10.00,"quantity":10000},{"operation":"buy","unit-cost":25.00,"quantity":5000},{"operation":"sell","unit-cost":15.00,"quantity":10000}]
+
+# Mais um comentário
+JSON INVÁLIDO: {"operation":"buy","unit-cost":10.00} // falta array e propriedades
+
+[{"operation":"buy","unit-cost":10.00,"quantity":10000},{"operation":"buy","unit-cost":25.00,"quantity":5000},{"operation":"sell","unit-cost":15.00,"quantity":10000},{"operation":"sell","unit-cost":25.00,"quantity":5000}]
+
+End of test scenarios

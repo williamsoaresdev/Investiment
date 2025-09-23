@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  capital-gains-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.WebApi
+    container_name: capital-gains-api
+    ports:
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000;https://+:5001
+    restart: unless-stopped
+    
+  capital-gains-console:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: capital-gains-console
+    stdin_open: true
+    tty: true
+    restart: "no"
+    
+networks:
+  default:
+    name: capital-gains-network

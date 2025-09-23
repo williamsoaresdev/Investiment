@@ -1,0 +1,46 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution file
+COPY CapitalGains.sln .
+
+# Copy project files
+COPY src/CapitalGains.Domain/CapitalGains.Domain.csproj src/CapitalGains.Domain/
+COPY src/CapitalGains.Application/CapitalGains.Application.csproj src/CapitalGains.Application/
+COPY src/CapitalGains.Infrastructure/CapitalGains.Infrastructure.csproj src/CapitalGains.Infrastructure/
+COPY src/CapitalGains.WebApi/CapitalGains.WebApi.csproj src/CapitalGains.WebApi/
+
+# Restore dependencies
+RUN dotnet restore src/CapitalGains.WebApi/CapitalGains.WebApi.csproj
+
+# Copy source code
+COPY src/ src/
+
+# Build the application
+RUN dotnet build src/CapitalGains.WebApi/CapitalGains.WebApi.csproj -c Release --no-restore
+
+# Publish the application
+RUN dotnet publish src/CapitalGains.WebApi/CapitalGains.WebApi.csproj -c Release --no-build -o /app/publish
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+
+# Create non-root user
+RUN adduser --disabled-password --gecos "" appuser && chown -R appuser /app
+USER appuser
+
+# Copy published application
+COPY --from=build /app/publish .
+
+# Expose ports
+EXPOSE 5000
+EXPOSE 5001
+
+# Set environment variables
+ENV ASPNETCORE_URLS=http://+:5000;https://+:5001
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Start the application
+ENTRYPOINT ["dotnet", "CapitalGains.WebApi.dll"]

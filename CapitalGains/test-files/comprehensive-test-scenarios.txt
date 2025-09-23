@@ -1,0 +1,103 @@
+# =====================================
+# CENÁRIOS DE TESTE - CAPITAL GAINS
+# =====================================
+# 
+# Este arquivo contém todos os cenários de teste para validar
+# o cálculo de impostos sobre ganhos de capital
+#
+# Formato: Cada linha representa um conjunto independente de operações
+# Saída esperada está comentada após cada cenário
+#
+
+# CASO #1: Operações com valor total <= R$ 20.000 (não paga imposto)
+# Entrada:
+[{"operation":"buy", "unit-cost":10.00, "quantity": 100},{"operation":"sell", "unit-cost":15.00, "quantity": 50},{"operation":"sell", "unit-cost":15.00, "quantity": 50}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0}]
+
+# CASO #2: Lucro alto seguido de prejuízo
+# Entrada:
+[{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"sell", "unit-cost":20.00, "quantity": 5000},{"operation":"sell", "unit-cost":5.00, "quantity": 5000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 10000.0},{"tax": 0.0}]
+
+# CASO #3: Prejuízo deduzido de lucro futuro
+# Entrada:
+[{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"sell", "unit-cost":5.00, "quantity": 5000},{"operation":"sell", "unit-cost":20.00, "quantity": 3000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 1000.0}]
+
+# CASO #4: Preço médio ponderado - sem lucro nem prejuízo
+# Entrada:
+[{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"buy", "unit-cost":25.00, "quantity": 5000},{"operation":"sell", "unit-cost":15.00, "quantity": 10000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0}]
+
+# CASO #5: Preço médio ponderado com lucro
+# Entrada:
+[{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"buy", "unit-cost":25.00, "quantity": 5000},{"operation":"sell", "unit-cost":15.00, "quantity": 10000},{"operation":"sell", "unit-cost":25.00, "quantity": 5000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 10000.0}]
+
+# CASO #6: Prejuízo deduzido de múltiplos lucros
+# Entrada:
+[{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"sell", "unit-cost":2.00, "quantity": 5000},{"operation":"sell", "unit-cost":20.00, "quantity": 2000},{"operation":"sell", "unit-cost":20.00, "quantity": 2000},{"operation":"sell", "unit-cost":25.00, "quantity": 1000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 3000.0}]
+
+# CASO #7: Sequência complexa com recompra
+# Entrada:
+[{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"sell", "unit-cost":2.00, "quantity": 5000},{"operation":"sell", "unit-cost":20.00, "quantity": 2000},{"operation":"sell", "unit-cost":20.00, "quantity": 2000},{"operation":"sell", "unit-cost":25.00, "quantity": 1000},{"operation":"buy", "unit-cost":20.00, "quantity": 10000},{"operation":"sell", "unit-cost":15.00, "quantity": 5000},{"operation":"sell", "unit-cost":30.00, "quantity": 4350},{"operation":"sell", "unit-cost":30.00, "quantity": 650}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 3000.0},{"tax": 0.0},{"tax": 0.0},{"tax": 3700.0},{"tax": 0.0}]
+
+# CASO #8: Lucros altos consecutivos
+# Entrada:
+[{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"sell", "unit-cost":50.00, "quantity": 10000},{"operation":"buy", "unit-cost":20.00, "quantity": 10000},{"operation":"sell", "unit-cost":50.00, "quantity": 10000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 80000.0},{"tax": 0.0},{"tax": 60000.0}]
+
+# CASO #9: Valores altos com regra dos R$ 20.000
+# Entrada:
+[{"operation": "buy", "unit-cost": 5000.00, "quantity": 10},{"operation": "sell", "unit-cost": 4000.00, "quantity": 5},{"operation": "buy", "unit-cost": 15000.00, "quantity": 5},{"operation": "buy", "unit-cost": 4000.00, "quantity": 2},{"operation": "buy", "unit-cost": 23000.00, "quantity": 2},{"operation": "sell", "unit-cost": 20000.00, "quantity": 1},{"operation": "sell", "unit-cost": 12000.00, "quantity": 10},{"operation": "sell", "unit-cost": 15000.00, "quantity": 3}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 1000.0},{"tax": 2400.0}]
+
+# =====================================
+# CASOS ADICIONAIS DE TESTE
+# =====================================
+
+# CASO #10: Apenas compras (nunca paga imposto)
+[{"operation":"buy", "unit-cost":10.00, "quantity": 1000},{"operation":"buy", "unit-cost":15.00, "quantity": 2000},{"operation":"buy", "unit-cost":20.00, "quantity": 500}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0}]
+
+# CASO #11: Venda com prejuízo exatamente R$ 20.000
+[{"operation":"buy", "unit-cost":10.00, "quantity": 2000},{"operation":"sell", "unit-cost":10.00, "quantity": 2000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0}]
+
+# CASO #12: Lucro exatamente R$ 20.000
+[{"operation":"buy", "unit-cost":10.00, "quantity": 2000},{"operation":"sell", "unit-cost":20.00, "quantity": 1000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0}]
+
+# CASO #13: Lucro de R$ 20.001 (deve pagar imposto)
+[{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"sell", "unit-cost":12.0001, "quantity": 10000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 4000.2}]
+
+# CASO #14: Múltiplas compras pequenas seguidas de venda grande
+[{"operation":"buy", "unit-cost":5.00, "quantity": 1000},{"operation":"buy", "unit-cost":10.00, "quantity": 2000},{"operation":"buy", "unit-cost":15.00, "quantity": 1000},{"operation":"sell", "unit-cost":25.00, "quantity": 4000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 12000.0}]
+
+# CASO #15: Prejuízo maior que lucros subsequentes
+[{"operation":"buy", "unit-cost":100.00, "quantity": 1000},{"operation":"sell", "unit-cost":50.00, "quantity": 1000},{"operation":"buy", "unit-cost":10.00, "quantity": 1000},{"operation":"sell", "unit-cost":15.00, "quantity": 1000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 0.0}]
+
+# CASO #16: Cenário de arredondamento decimal
+[{"operation":"buy", "unit-cost":10.33, "quantity": 100},{"operation":"buy", "unit-cost":15.67, "quantity": 200},{"operation":"sell", "unit-cost":20.99, "quantity": 300}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0}]
+
+# CASO #17: Volume muito alto
+[{"operation":"buy", "unit-cost":1.00, "quantity": 100000},{"operation":"sell", "unit-cost":2.00, "quantity": 100000}]
+# Saída esperada: [{"tax": 0.0},{"tax": 20000.0}]
+
+# CASO #18: Cenário misto - pequenos e grandes volumes
+[{"operation":"buy", "unit-cost":10.00, "quantity": 100},{"operation":"sell", "unit-cost":15.00, "quantity": 50},{"operation":"buy", "unit-cost":20.00, "quantity": 10000},{"operation":"sell", "unit-cost":25.00, "quantity": 10050}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 10050.0}]
+
+# CASO #19: Zero quantity (caso extremo)
+[{"operation":"buy", "unit-cost":10.00, "quantity": 1000}]
+# Saída esperada: [{"tax": 0.0}]
+
+# CASO #20: Sequência de compra e venda alternada
+[{"operation":"buy", "unit-cost":10.00, "quantity": 1000},{"operation":"sell", "unit-cost":12.00, "quantity": 500},{"operation":"buy", "unit-cost":15.00, "quantity": 1000},{"operation":"sell", "unit-cost":18.00, "quantity": 1500}]
+# Saída esperada: [{"tax": 0.0},{"tax": 0.0},{"tax": 0.0},{"tax": 900.0}]
