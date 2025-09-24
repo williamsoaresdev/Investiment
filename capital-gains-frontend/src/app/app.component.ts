@@ -44,13 +44,11 @@ export class AppComponent {
   scenarios: ScenarioInfo[] = [];
   isCalculating = false;
 
-  // Table configuration
   displayedColumns: string[] = ['operationNumber', 'operation', 'unitCost', 'quantity', 'total', 'tax', 'status'];
   
   get tableData(): any[] {
     const data: any[] = [];
     
-    // Combine operations and tax results
     this.operations.forEach((op, index) => {
       const taxResult = this.taxResults[index] || { tax: 0, hasError: false, error: null };
       data.push({
@@ -66,7 +64,6 @@ export class AppComponent {
       });
     });
 
-    // If no operations but we have tax results (from file scenarios)
     if (this.operations.length === 0 && this.taxResults.length > 0) {
       this.taxResults.forEach((result, index) => {
         data.push({
@@ -93,7 +90,6 @@ export class AppComponent {
   }
 
   onTabChange(event: any): void {
-    // Clear all data when switching tabs
     this.operationsJson = '';
     this.selectedFileName = '';
     this.taxResults = [];
@@ -145,11 +141,9 @@ stdout:
       const file = input.files[0];
       this.selectedFileName = file.name;
       
-      // For test scenario files (.txt), upload directly to backend
       if (file.name.toLowerCase().endsWith('.txt')) {
         this.uploadFile(file);
       } else {
-        // For JSON files, read content and display in textarea
         const reader = new FileReader();
         reader.onload = (e) => {
           const content = e.target?.result as string;
@@ -175,7 +169,6 @@ stdout:
         console.error('Error uploading file:', error);
         this.isCalculating = false;
         
-        // Provide more specific error messages
         if (error.status === 400) {
           alert('File processing error: ' + (error.error || 'Invalid file format or content.'));
         } else {
@@ -197,7 +190,6 @@ stdout:
     try {
       const operations: Operation[] = JSON.parse(this.operationsJson);
       
-      // Call the real .NET backend API
       this.capitalGainsService.calculateCapitalGains(operations).subscribe({
         next: (result) => {
           this.operations = result.operations;
@@ -210,14 +202,12 @@ stdout:
           console.error('Error calling backend API:', error);
           this.isCalculating = false;
           
-          // Check if it's a validation error (400)
           if (error.status === 400) {
             alert('Invalid operations detected: ' + (error.error || 'Please check your input data.'));
           } else {
-            // Fallback to simulation for other errors
             console.log('Falling back to local simulation...');
             this.taxResults = this.capitalGainsService.simulateCalculation(operations);
-            this.operations = operations; // Store the input operations
+            this.operations = operations;
             alert('API connection failed. Using local calculation as fallback.');
           }
         }

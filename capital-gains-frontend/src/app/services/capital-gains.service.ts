@@ -33,7 +33,7 @@ export interface CalculationResult {
   providedIn: 'root'
 })
 export class CapitalGainsService {
-  private readonly baseUrl = 'https://localhost:5001/api/capitalgains'; // Backend .NET API URL (using HTTPS)
+  private readonly baseUrl = 'https://localhost:5001/api/capitalgains';
 
   constructor(private http: HttpClient) { }
 
@@ -69,7 +69,6 @@ export class CapitalGainsService {
       );
   }
 
-  // For development/testing - simulate the calculation locally
   simulateCalculation(operations: Operation[]): TaxResult[] {
     const results: TaxResult[] = [];
     let weightedAverage = 0;
@@ -89,7 +88,6 @@ export class CapitalGainsService {
         let tax = 0;
         if (profit > 0) {
           const taxableProfit = Math.max(0, profit - accumulatedLoss);
-          // Apply 20% tax if sale value exceeds R$ 20,000
           if (operation['unit-cost'] * operation.quantity > 20000) {
             tax = taxableProfit * 0.20;
           }

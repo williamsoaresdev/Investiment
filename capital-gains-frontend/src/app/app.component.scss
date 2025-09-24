@@ -183,7 +183,6 @@
   }
 }
 
-// Table Styles
 .table-container {
   margin-top: 16px;
   border-radius: 8px;
@@ -312,7 +311,6 @@
   }
 }
 
-// Responsive design
 @media (max-width: 768px) {
   .container {
     padding: 0 10px;
@@ -353,7 +351,6 @@
   }
 }
 
-// Material theme customizations
 :host {
   .mat-mdc-card {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -369,7 +366,6 @@
   }
 }
 
-// Loading state
 .calculating {
   .input-card {
     opacity: 0.6;
@@ -377,7 +373,6 @@
   }
 }
 
-// Success state
 .calculation-success {
   .result-card {
     animation: slideIn 0.3s ease-out;
@@ -395,7 +390,6 @@
   }
 }
 
-// Operations and Results Layout
 .operations-results-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -427,7 +421,6 @@
   }
 }
 
-// Operations styling
 .operations-list {
   display: flex;
   flex-direction: column;
@@ -507,7 +500,6 @@
   font-family: 'Roboto Mono', monospace;
 }
 
-// Results styling
 .results-list {
   display: flex;
   flex-direction: column;
@@ -588,12 +580,10 @@
   }
 }
 
-// Fallback results-only layout
 .results-only-container {
   margin-top: 16px;
 }
 
-// Error styling
 .result-tax-card.error-card {
   background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
   
