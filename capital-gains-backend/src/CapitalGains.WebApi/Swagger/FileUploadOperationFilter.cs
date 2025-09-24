@@ -3,9 +3,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace CapitalGains.WebApi.Swagger;
 
-/// <summary>
-/// Operation filter to handle file upload documentation in Swagger
-/// </summary>
 public class FileUploadOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
@@ -41,7 +38,6 @@ public class FileUploadOperationFilter : IOperationFilter
             }
         };
 
-        // Remove file parameter from parameters list since it's now in request body
         operation.Parameters = operation.Parameters?
             .Where(p => !fileParameters.Any(fp => fp.Name == p.Name))
             .ToList();

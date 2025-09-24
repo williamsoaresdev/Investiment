@@ -2,20 +2,11 @@ using CapitalGains.Domain.Models;
 
 namespace CapitalGains.Domain.Services;
 
-/// <summary>
-/// Interface for capital gains tax calculation service
-/// </summary>
 public interface ICapitalGainsCalculator
 {
-    /// <summary>
-    /// Processes a list of operations and returns tax results
-    /// </summary>
     TaxResultCollection ProcessOperations(IEnumerable<Operation> operations);
 }
 
-/// <summary>
-/// Service responsible for calculating capital gains taxes
-/// </summary>
 public class CapitalGainsCalculator : ICapitalGainsCalculator
 {
     public TaxResultCollection ProcessOperations(IEnumerable<Operation> operations)
@@ -44,7 +35,7 @@ public class CapitalGainsCalculator : ICapitalGainsCalculator
     private static TaxResult ProcessBuyOperation(Portfolio portfolio, Operation operation)
     {
         portfolio.Buy(operation.UnitCost, operation.Quantity);
-        return new TaxResult(0m); // Buy operations never generate tax
+        return new TaxResult(0m);
     }
 
     private static TaxResult ProcessSellOperation(Portfolio portfolio, Operation operation)

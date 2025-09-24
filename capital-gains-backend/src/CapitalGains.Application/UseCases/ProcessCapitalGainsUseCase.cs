@@ -4,20 +4,11 @@ using Microsoft.Extensions.Logging;
 
 namespace CapitalGains.Application.UseCases;
 
-/// <summary>
-/// Use case for processing capital gains operations
-/// </summary>
 public interface IProcessCapitalGainsUseCase
 {
-    /// <summary>
-    /// Processes a batch of operations and returns tax calculations
-    /// </summary>
     Task<TaxResultCollection> ExecuteAsync(IEnumerable<Operation> operations, CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// Implementation of the process capital gains use case
-/// </summary>
 public class ProcessCapitalGainsUseCase : IProcessCapitalGainsUseCase
 {
     private readonly ICapitalGainsCalculator _calculator;

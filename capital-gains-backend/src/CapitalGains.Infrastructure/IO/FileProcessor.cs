@@ -3,25 +3,13 @@ using System.Text.RegularExpressions;
 
 namespace CapitalGains.Infrastructure.IO;
 
-/// <summary>
-/// Interface for file processing services
-/// </summary>
 public interface IFileProcessor
 {
-    /// <summary>
-    /// Processes a file content and extracts valid JSON lines
-    /// </summary>
     IEnumerable<string> ProcessFileContent(string content);
 
-    /// <summary>
-    /// Validates if a line contains a valid JSON array
-    /// </summary>
     bool IsValidJsonLine(string line);
 }
 
-/// <summary>
-/// Service for processing files with mixed content (comments, invalid lines, etc.)
-/// </summary>
 public class FileProcessor : IFileProcessor
 {
     private static readonly Regex JsonArrayPattern = new(@"^\s*\[.*\]\s*$", RegexOptions.Compiled);
@@ -41,7 +29,6 @@ public class FileProcessor : IFileProcessor
             
             Console.WriteLine($"[FileProcessor] Line {index + 1}: '{trimmedLine.Substring(0, Math.Min(50, trimmedLine.Length))}...'");
             
-            // Skip empty lines and comments
             if (string.IsNullOrWhiteSpace(trimmedLine) || 
                 trimmedLine.StartsWith("#") || 
                 trimmedLine.StartsWith("//") ||
@@ -57,7 +44,6 @@ public class FileProcessor : IFileProcessor
                 continue;
             }
 
-            // Check if line looks like a JSON array and is valid
             if (IsValidJsonLine(trimmedLine))
             {
                 Console.WriteLine($"[FileProcessor] Found valid JSON line {index + 1}");
@@ -77,26 +63,21 @@ public class FileProcessor : IFileProcessor
 
         var trimmedLine = line.Trim();
 
-        // Must start with [ and end with ]
         if (!JsonArrayPattern.IsMatch(trimmedLine))
             return false;
 
         try
         {
-            // Try to parse as JSON to validate structure
             using var document = JsonDocument.Parse(trimmedLine);
             
-            // Must be an array
             if (document.RootElement.ValueKind != JsonValueKind.Array)
                 return false;
 
-            // Check if array contains valid operation objects
             foreach (var element in document.RootElement.EnumerateArray())
             {
                 if (element.ValueKind != JsonValueKind.Object)
                     return false;
 
-                // Must have required properties
                 if (!element.TryGetProperty("operation", out _) ||
                     !element.TryGetProperty("unit-cost", out _) ||
                     !element.TryGetProperty("quantity", out _))

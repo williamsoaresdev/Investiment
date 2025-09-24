@@ -2,25 +2,13 @@ using Microsoft.Extensions.Logging;
 
 namespace CapitalGains.Infrastructure.IO;
 
-/// <summary>
-/// Interface for console input/output operations
-/// </summary>
 public interface IConsoleService
 {
-    /// <summary>
-    /// Reads all lines from standard input until empty line
-    /// </summary>
     Task<IEnumerable<string>> ReadAllLinesAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Writes a line to standard output
-    /// </summary>
     Task WriteLineAsync(string line, CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// Console service for handling standard input/output
-/// </summary>
 public class ConsoleService : IConsoleService
 {
     private readonly ILogger<ConsoleService> _logger;
@@ -41,7 +29,6 @@ public class ConsoleService : IConsoleService
             string? line;
             while ((line = await Console.In.ReadLineAsync()) != null && !cancellationToken.IsCancellationRequested)
             {
-                // Stop reading when we encounter an empty line
                 if (string.IsNullOrWhiteSpace(line))
                 {
                     _logger.LogDebug("Empty line encountered, stopping input reading");

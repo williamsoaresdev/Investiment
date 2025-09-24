@@ -9,9 +9,6 @@ using Microsoft.Extensions.Logging;
 
 namespace CapitalGains.Console;
 
-/// <summary>
-/// Main application service that orchestrates the capital gains calculation
-/// </summary>
 public class CapitalGainsService : IHostedService
 {
     private readonly IConsoleService _consoleService;
@@ -40,10 +37,8 @@ public class CapitalGainsService : IHostedService
         {
             _logger.LogInformation("Capital Gains Calculator started");
             
-            // Read all input lines
             var inputLines = await _consoleService.ReadAllLinesAsync(cancellationToken);
             
-            // Process each line independently
             foreach (var line in inputLines)
             {
                 await ProcessLineAsync(line, cancellationToken);
@@ -74,13 +69,10 @@ public class CapitalGainsService : IHostedService
         {
             _logger.LogDebug("Processing input line: {InputLine}", inputLine);
             
-            // Parse operations from JSON
             var operations = _jsonSerializer.DeserializeOperations(inputLine);
             
-            // Process operations and calculate taxes
             var results = await _processCapitalGainsUseCase.ExecuteAsync(operations, cancellationToken);
             
-            // Serialize and output results
             var outputJson = _jsonSerializer.SerializeTaxResults(results);
             await _consoleService.WriteLineAsync(outputJson, cancellationToken);
             
@@ -94,33 +86,25 @@ public class CapitalGainsService : IHostedService
     }
 }
 
-/// <summary>
-/// Application entry point
-/// </summary>
 public class Program
 {
     public static async Task Main(string[] args)
     {
         var builder = Host.CreateApplicationBuilder(args);
         
-        // Configure logging - only show errors by default to keep output clean
         builder.Logging.ClearProviders();
         
 #if DEBUG
-        // In debug mode, show all logs to console for development
         builder.Logging.AddConsole();
         builder.Logging.SetMinimumLevel(LogLevel.Debug);
 #else
-        // In release mode, only log errors to stderr to keep stdout clean for JSON output
         builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Error);
         builder.Logging.SetMinimumLevel(LogLevel.Error);
 #endif
 
-        // Register services
         builder.Services.AddApplicationServices();
         builder.Services.AddInfrastructureServices();
         
-        // Register the main application service
         builder.Services.AddHostedService<CapitalGainsService>();
 
         var host = builder.Build();

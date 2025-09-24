@@ -1,8 +1,5 @@
 namespace CapitalGains.Domain.Models;
 
-/// <summary>
-/// Represents the current state of a stock portfolio
-/// </summary>
 public class Portfolio
 {
     private decimal _averagePrice;
@@ -16,29 +13,14 @@ public class Portfolio
         _accumulatedLoss = 0m;
     }
 
-    /// <summary>
-    /// Current weighted average price of stocks
-    /// </summary>
     public decimal AveragePrice => _averagePrice;
 
-    /// <summary>
-    /// Current quantity of stocks owned
-    /// </summary>
     public int Quantity => _quantity;
 
-    /// <summary>
-    /// Accumulated losses that can be deducted from future profits
-    /// </summary>
     public decimal AccumulatedLoss => _accumulatedLoss;
 
-    /// <summary>
-    /// Checks if the portfolio has any stocks
-    /// </summary>
     public bool HasStocks => _quantity > 0;
 
-    /// <summary>
-    /// Processes a buy operation, updating the weighted average price
-    /// </summary>
     public void Buy(decimal unitCost, int quantity)
     {
         if (unitCost <= 0 || quantity <= 0)
@@ -52,9 +34,6 @@ public class Portfolio
         _quantity = totalQuantity;
     }
 
-    /// <summary>
-    /// Processes a sell operation and calculates tax
-    /// </summary>
     public TaxResult Sell(decimal unitCost, int quantity)
     {
         if (unitCost <= 0 || quantity <= 0)
@@ -67,10 +46,7 @@ public class Portfolio
         var totalCostBasis = _averagePrice * quantity;
         var profitOrLoss = totalOperationValue - totalCostBasis;
         
-        // Update quantity
-        _quantity -= quantity;
-        
-        // If no stocks left, reset average price
+        _quantity -= quantity;        // If no stocks left, reset average price
         if (_quantity == 0)
             _averagePrice = 0m;
 
@@ -116,9 +92,6 @@ public class Portfolio
         return taxableProfit > 0 ? Math.Round(taxableProfit * taxRate, 2, MidpointRounding.AwayFromZero) : 0m;
     }
 
-    /// <summary>
-    /// Resets the portfolio to initial state
-    /// </summary>
     public void Reset()
     {
         _averagePrice = 0m;

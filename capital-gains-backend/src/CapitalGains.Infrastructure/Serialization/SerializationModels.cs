@@ -4,9 +4,6 @@ using CapitalGains.Domain.Models;
 
 namespace CapitalGains.Infrastructure.Serialization;
 
-/// <summary>
-/// JSON representation of an operation for serialization
-/// </summary>
 public class OperationDto
 {
     [JsonPropertyName("operation")]
@@ -18,9 +15,6 @@ public class OperationDto
     [JsonPropertyName("quantity")]
     public int Quantity { get; set; }
 
-    /// <summary>
-    /// Converts DTO to domain model
-    /// </summary>
     public Operation ToDomain()
     {
         var operationType = Operation.ToLowerInvariant() switch
@@ -33,9 +27,6 @@ public class OperationDto
         return new Operation(operationType, UnitCost, Quantity);
     }
 
-    /// <summary>
-    /// Creates DTO from domain model
-    /// </summary>
     public static OperationDto FromDomain(Operation operation)
     {
         return new OperationDto
@@ -47,17 +38,11 @@ public class OperationDto
     }
 }
 
-/// <summary>
-/// JSON representation of a tax result for serialization
-/// </summary>
 public class TaxResultDto
 {
     [JsonPropertyName("tax")]
     public decimal Tax { get; set; }
 
-    /// <summary>
-    /// Creates DTO from domain model
-    /// </summary>
     public static TaxResultDto FromDomain(TaxResult taxResult)
     {
         return new TaxResultDto { Tax = taxResult.RoundedTax };

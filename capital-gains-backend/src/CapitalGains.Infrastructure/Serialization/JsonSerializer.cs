@@ -4,25 +4,13 @@ using CapitalGains.Infrastructure.Serialization;
 
 namespace CapitalGains.Infrastructure.Serialization;
 
-/// <summary>
-/// Interface for JSON serialization services
-/// </summary>
 public interface IJsonSerializer
 {
-    /// <summary>
-    /// Deserializes a JSON string to a list of operations
-    /// </summary>
     IEnumerable<Operation> DeserializeOperations(string json);
 
-    /// <summary>
-    /// Serializes tax results to JSON string
-    /// </summary>
     string SerializeTaxResults(TaxResultCollection results);
 }
 
-/// <summary>
-/// JSON serialization service using System.Text.Json
-/// </summary>
 public class JsonSerializer : IJsonSerializer
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -60,8 +48,6 @@ public class JsonSerializer : IJsonSerializer
 
         var json = System.Text.Json.JsonSerializer.Serialize(taxResultDtos, JsonOptions);
         
-        // Ensure zero values are formatted as 0.0 for consistency with test expectations
-        // Also format integer values to show single decimal place
         json = json.Replace("\"tax\":0", "\"tax\":0.0");
         json = System.Text.RegularExpressions.Regex.Replace(json, @"""tax"":(\d+)\.00", @"""tax"":$1.0");
         
