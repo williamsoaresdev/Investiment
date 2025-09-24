@@ -9,10 +9,8 @@ public class OperationTests
     [Fact]
     public void Operation_WithValidBuyData_ShouldCreateCorrectly()
     {
-        // Arrange & Act
         var operation = new Operation(OperationType.Buy, 10.00m, 100);
 
-        // Assert
         operation.Type.Should().Be(OperationType.Buy);
         operation.UnitCost.Should().Be(10.00m);
         operation.Quantity.Should().Be(100);
@@ -23,10 +21,8 @@ public class OperationTests
     [Fact]
     public void Operation_WithValidSellData_ShouldCreateCorrectly()
     {
-        // Arrange & Act
         var operation = new Operation(OperationType.Sell, 15.50m, 50);
 
-        // Assert
         operation.Type.Should().Be(OperationType.Sell);
         operation.UnitCost.Should().Be(15.50m);
         operation.Quantity.Should().Be(50);
@@ -42,20 +38,16 @@ public class OperationTests
     [InlineData(0, 0)]
     public void Operation_WithInvalidData_ShouldBeInvalid(decimal unitCost, int quantity)
     {
-        // Arrange & Act
         var operation = new Operation(OperationType.Buy, unitCost, quantity);
 
-        // Assert
         operation.IsValid.Should().BeFalse();
     }
 
     [Fact]
     public void TotalValue_ShouldCalculateCorrectly()
     {
-        // Arrange & Act
         var operation = new Operation(OperationType.Buy, 12.34m, 567);
 
-        // Assert
         operation.TotalValue.Should().Be(6996.78m);
     }
 }
