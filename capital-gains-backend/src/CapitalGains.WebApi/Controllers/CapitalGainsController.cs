@@ -30,6 +30,13 @@ public class CapitalGainsController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("health")]
+    [ProducesResponseType(typeof(object), 200)]
+    public ActionResult GetHealth()
+    {
+        return Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+    }
+
     [HttpPost("calculate")]
     [ProducesResponseType(typeof(CalculationResultResponse), 200)]
     [ProducesResponseType(typeof(string), 400)]

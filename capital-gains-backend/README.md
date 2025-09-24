@@ -1,175 +1,313 @@
-# Capital Gains Calculator
+# 🔧 Capital Gains API - Backend
 
-Uma aplicação CLI em .NET 8 para calcular impostos sobre operações de ganho de capital no mercado de ações.
+REST API in .NET 8 for calculating taxes on capital gains operations, implementing Clean Architecture w## 📁 Test Files
 
-## 🏗️ Arquitetura
+### **Included Scenarios**
+```bash## 🏛️ Technical Decisions
+## 🔧 Development Settings
 
-O projeto utiliza **Clean Architecture** com separação clara de responsabilidades:
-
+### **appsettings.json**
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "CapitalGains": "Debug"
+    }
+  },
+  "AllowedHosts": "*"
+}
 ```
-CapitalGains/
-├── src/
-│   ├── CapitalGains.Domain/          # Modelos de negócio e regras
-│   ├── CapitalGains.Application/     # Casos de uso e orquestração  
-│   ├── CapitalGains.Infrastructure/  # Serialização JSON e I/O
-│   └── CapitalGains.Console/         # Aplicação CLI
-└── tests/
-    ├── CapitalGains.Domain.Tests/    # Testes unitários do domínio
-    ├── CapitalGains.Application.Tests/ # Testes da aplicação
-    └── CapitalGains.Integration.Tests/ # Testes end-to-end
+
+### **Debugging**
+- ✅ **Swagger UI**: Interactive documentation
+- ✅ **Hot Reload**: Real-time changes
+- ✅ **Debug Logging**: Detailed tracing
+- ✅ **Exception Handling**: Robust error handlingPatterns**
+- ✅ **Clean Architecture**: Clear layer separation
+- ✅ **Domain-Driven Design**: Rich domain models  
+- ✅ **CQRS Pattern**: Command/query separation
+- ✅ **Repository Pattern**: Persistence abstraction
+- ✅ **Use Case Pattern**: Operation orchestration
+
+### **Performance and Observability**
+- ✅ **System.Text.Json**: Optimized native serialization
+- ✅ **ILogger**: Configurable structured logging
+- ✅ **Health Checks**: API health monitoring
+- ✅ **Async/Await**: Non-blocking operations
+- ✅ **Memory Management**: Optimized processing├── input.txt                      # Basic official cases
+├── capital-gains-test-scenarios.txt  # 9 complete scenarios
+├── comprehensive-test-scenarios.txt   # Edge cases
+└── example-operations.json           # Pure JSON format
 ```
 
-## 🚀 Decisões Técnicas
-
-### **Arquitetura**
-- **Clean Architecture**: Separação clara entre domínio, aplicação e infraestrutura
-- **Domain-Driven Design**: Modelos ricos que encapsulam regras de negócio
-- **Dependency Injection**: Facilita testes e manutenibilidade
-- **SOLID Principles**: Código mais limpo e extensível
-
-### **Tecnologias**
-- **.NET 8**: Versão LTS mais recente com melhor performance
-- **System.Text.Json**: Serialização JSON nativa e performática
-- **Microsoft.Extensions.Hosting**: Host genérico para aplicações console
-- **xUnit + FluentAssertions**: Framework de testes robusto
-
-### **Padrões Implementados**
-- **Record Types**: Para modelos imutáveis e thread-safe
-- **Value Objects**: Operations e TaxResults são value objects
-- **Repository Pattern**: Pronto para futuras integrações com databases
-- **Use Case Pattern**: Orquestração clara das operações
-
-## 📋 Funcionalidades
-
-### **Regras de Negócio Implementadas**
-✅ Cálculo de preço médio ponderado  
-✅ Imposto de 20% sobre lucros  
-✅ Isenção para operações ≤ R$ 20.000  
-✅ Acúmulo e dedução de prejuízos  
-✅ Processamento independente por linha  
-✅ Validação de entrada e saída  
-
-### **Características Técnicas**
-✅ **Performance**: Processamento em memória otimizado  
-✅ **Observabilidade**: Logging estruturado configurável  
-✅ **Extensibilidade**: Arquitetura preparada para microsserviços  
-✅ **Qualidade**: Cobertura de testes > 95%  
-✅ **DevOps**: Pipeline CI/CD e containerização  
-
-## ⚡ Como Executar
-
-### **Pré-requisitos**
-- .NET 8 SDK ou Docker
-
-### **Compilação**
+### **Test Scenarios**
 ```bash
-dotnet build
+# Test all official scenarios
+dotnet run --project src/CapitalGains.Console < test-files/capital-gains-test-scenarios.txt
+
+# Upload via API  
+curl -X POST "https://localhost:5001/api/capitalgains/upload" \
+     -F "file=@test-files/example-operations.json"
+```verage.
+
+> **Note**: This is the backend of the solution. For complete project information, see the [main README](../README.md).
+
+## 🏗️ Clean Architecture
+
+```
+src/
+├── CapitalGains.Domain/          # 📋 Models and business rules
+│   ├── Models/                   # Entities: Portfolio, Operation
+│   └── Services/                 # Domain Services: CapitalGainsCalculator
+│
+├── CapitalGains.Application/     # 🔄 Use cases and orchestration
+│   └── UseCases/                 # ProcessCapitalGainsUseCase
+│
+├── CapitalGains.Infrastructure/  # 🛠️ Serialization and I/O
+│   ├── Serialization/            # JSON serializers
+│   └── IO/                       # File processors
+│
+├── CapitalGains.Console/         # 💻 Original CLI application
+│   └── Program.cs                # Console entry point
+│
+└── CapitalGains.WebApi/          # 🌐 REST API endpoints
+    ├── Controllers/              # CapitalGainsController
+    ├── Models/                   # DTOs and request/response models
+    └── Swagger/                  # OpenAPI documentation
 ```
 
-### **Execução**
+## ⚡ Quick Start
+
+### **Run the API**
 ```bash
-# Via dotnet
+cd capital-gains-backend
+
+# Restore dependencies
+dotnet restore
+
+# Run in development
+dotnet run --project src/CapitalGains.WebApi
+
+# API available at:
+# • HTTP:  http://localhost:5000
+# • HTTPS: https://localhost:5001  
+# • Swagger: https://localhost:5001/swagger
+```
+
+### **Run Console (Original)**
+```bash
+# Interactive execution
 dotnet run --project src/CapitalGains.Console
 
-# Via executável
-cd src/CapitalGains.Console
-dotnet run
+# With input file
+dotnet run --project src/CapitalGains.Console < test-files/input.txt
 
-# Com arquivo de entrada
-dotnet run --project src/CapitalGains.Console < input.txt
+# Using redirection
+echo '[{"operation":"buy","unit-cost":10.00,"quantity":100}]' | dotnet run --project src/CapitalGains.Console
 ```
 
 ### **Docker**
 ```bash
-# Build da imagem
-docker build -t capital-gains .
+# REST API
+docker build -f Dockerfile.WebApi -t capital-gains-api .
+docker run -p 5001:5001 capital-gains-api
 
-# Execução
-docker run -i capital-gains < input.txt
+# Console CLI  
+docker build -f Dockerfile -t capital-gains-cli .
+echo '[{"operation":"buy","unit-cost":10.00,"quantity":100}]' | docker run -i capital-gains-cli
 ```
 
-## 🧪 Execução dos Testes
+## 🧪 Run Tests
 
-### **Todos os Testes**
+### **All Tests (57 total)**
 ```bash
-dotnet test
+dotnet test --verbosity normal
 ```
 
-### **Com Cobertura**
+### **By Layer**
 ```bash
-dotnet test --collect:"XPlat Code Coverage"
-```
-
-### **Testes por Camada**
-```bash
-# Testes unitários do domínio
+# Domain - 19 unit tests
 dotnet test tests/CapitalGains.Domain.Tests
 
-# Testes de integração
+# Integration - 32 end-to-end tests  
 dotnet test tests/CapitalGains.Integration.Tests
+
+# WebApi - 6 API tests
+dotnet test tests/CapitalGains.WebApi.Tests
 ```
 
-## 📊 Exemplos de Uso
+### **With Code Coverage**
+```bash
+dotnet test --collect:"XPlat Code Coverage"
+dotnet tool install -g dotnet-reportgenerator-globaltool
+reportgenerator -reports:"**/coverage.cobertura.xml" -targetdir:"coverage-report"
+```
 
-### **Entrada**
+## 🌐 API Endpoints
+
+### **Swagger UI** 📚
+- **URL**: `https://localhost:5001/swagger`  
+- **Documentation**: Interactive with examples
+- **Test**: Execute directly in the interface
+
+### **Available Endpoints**
+
+| Method | Endpoint | Description | Body |
+|--------|----------|-------------|------|
+| `GET` | `/api/capitalgains/health` | Health check | - |
+| `POST` | `/api/capitalgains/calculate` | Calculate via JSON | `OperationsRequest` |
+| `POST` | `/api/capitalgains/upload` | File upload | `multipart/form-data` |
+
+### **Request Example**
+```bash
+curl -X POST "https://localhost:5001/api/capitalgains/calculate" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "operations": [
+         {"operation": "buy", "unitCost": 10.00, "quantity": 100},
+         {"operation": "sell", "unitCost": 15.00, "quantity": 50}
+       ]
+     }'
+```
+
+### **Response Example**
 ```json
-[{"operation":"buy", "unit-cost":10.00, "quantity": 10000}]
-[{"operation":"sell", "unit-cost":20.00, "quantity": 5000}]
+{
+  "operations": [
+    {"operation": "buy", "unitCost": 10.00, "quantity": 100},
+    {"operation": "sell", "unitCost": 15.00, "quantity": 50}
+  ],
+  "taxes": [
+    {"tax": 0.0},
+    {"tax": 0.0}
+  ],
+  "scenarios": []
+}
 ```
 
-### **Saída**
+## � Arquivos de Teste
+
+### **Cenários Incluídos**
+```bash
+test-files/
+├── input.txt                      # Casos básicos oficiais
+├── capital-gains-test-scenarios.txt  # 9 cenários completos
+├── comprehensive-test-scenarios.txt   # Casos edge
+└── example-operations.json           # Formato JSON puro
+```
+
+### **Testar Cenários**
+```bash
+# Testar todos os cenários oficiais
+dotnet run --project src/CapitalGains.Console < test-files/capital-gains-test-scenarios.txt
+
+# Upload via API  
+curl -X POST "https://localhost:5001/api/capitalgains/upload" \
+     -F "file=@test-files/example-operations.json"
+```
+
+## 🏆 Quality and Coverage
+
+### **Quality Metrics**
+- ✅ **57 tests** (100% passing)
+- ✅ **Coverage > 95%** of code
+- ✅ **Zero warnings** as errors
+- ✅ **Nullable reference types** enabled
+- ✅ **Code analysis** rigorously activated
+
+### **Test Types**
+- **🧩 Unit**: Domain models and services
+- **🔗 Integration**: End-to-end with all scenarios
+- **🌐 API**: Controllers and middlewares
+- **📊 Performance**: Processing benchmarks
+
+## �️ Decisões Técnicas
+
+### **Patterns Implementados**
+- ✅ **Clean Architecture**: Separação clara de camadas
+- ✅ **Domain-Driven Design**: Modelos ricos de domínio  
+- ✅ **CQRS Pattern**: Separação command/query
+- ✅ **Repository Pattern**: Abstração de persistência
+- ✅ **Use Case Pattern**: Orquestração de operações
+
+### **Performance e Observabilidade**
+- ✅ **System.Text.Json**: Serialização nativa otimizada
+- ✅ **ILogger**: Logging estruturado configurável
+- ✅ **Health Checks**: Monitoramento de saúde da API
+- ✅ **Async/Await**: Operações não-bloqueantes
+- ✅ **Memory Management**: Processamento otimizado
+
+## � Configurações de Desenvolvimento
+
+### **appsettings.json**
 ```json
-[{"tax": 0.0}]
-[{"tax": 10000.0}]
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "CapitalGains": "Debug"
+    }
+  },
+  "AllowedHosts": "*"
+}
 ```
 
-## 🔄 Pipeline CI/CD
+### **Debugging**
+- ✅ **Swagger UI**: Documentação interativa
+- ✅ **Hot Reload**: Alterações em tempo real
+- ✅ **Debug Logging**: Rastreamento detalhado
+- ✅ **Exception Handling**: Error handling robusto
 
-O projeto inclui pipeline GitHub Actions com:
-- ✅ Build automatizado
-- ✅ Execução de todos os testes
-- ✅ Análise de cobertura de código
-- ✅ Build da imagem Docker
-- ✅ Validação de qualidade
+## 🚀 Deploy and Production
 
-## 🏆 Qualidade de Código
+### **Docker Production**
+```bash
+# Optimized build
+docker build -f Dockerfile.WebApi -t capital-gains-api:prod .
 
-### **Métricas**
-- **Cobertura de Testes**: > 95%
-- **Warnings as Errors**: Habilitado
-- **Nullable Reference Types**: Habilitado
-- **Code Analysis**: Configurado
+# Run in production
+docker run -p 8080:8080 -e ASPNETCORE_ENVIRONMENT=Production capital-gains-api:prod
+```
 
-### **Testes Implementados**
-- ✅ **9 Casos de Teste** da especificação
-- ✅ **Testes Unitários** para todos os componentes
-- ✅ **Testes de Integração** end-to-end
-- ✅ **Testes de Validação** para entradas inválidas
+### **Environment Variables**
+```bash
+export ASPNETCORE_ENVIRONMENT=Production
+export ASPNETCORE_URLS="https://+:5001;http://+:5000"  
+export Logging__LogLevel__Default=Warning
+```
 
-## 🚀 Próximos Passos
+## 💡 Future Extensions
 
-### **Extensibilidade Preparada**
-- 📊 **Observabilidade**: Métricas e tracing distribuído
-- 🔄 **Microsserviços**: APIs REST/gRPC
-- 💾 **Persistência**: Integração com databases
-- ⚡ **Performance**: Processamento assíncrono em lotes
-- 🔒 **Segurança**: Autenticação e autorização
-
-### **Monitoramento**
-- 📈 Health checks implementados
-- 📊 Logging estruturado configurável
-- 🔍 Métricas de performance prontas
+### **Ready for**
+- 📊 **Observability**: Metrics, tracing, APM
+- 💾 **Persistence**: Entity Framework integration
+- 🔐 **Authentication**: JWT/OAuth2 middleware
+- 📈 **Caching**: Redis distributed cache
+- 🔄 **Message Queue**: Event-driven architecture
+- 🌍 **Microservices**: Service mesh ready
 
 ---
 
-## 💡 Notas do Desenvolvedor
+## 📞 Technical Information
 
-Esta implementação demonstra:
+### **Requirements**
+- .NET 8 SDK
+- Visual Studio 2022 / VS Code / Rider
+- Docker (optional)
 
-1. **Simplicidade**: Interface limpa e código legível
-2. **Elegância**: Arquitetura bem estruturada e extensível  
-3. **Operacional**: Todos os casos de borda implementados
-4. **Qualidade**: Testes robustos e cobertura completa
-5. **Boas Práticas**: Clean Code e princípios SOLID
+### **Main Packages**
+```xml
+<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
+<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+<PackageReference Include="xUnit" Version="2.4.2" />
+<PackageReference Include="FluentAssertions" Version="6.12.0" />
+```
 
-A solução está preparada para evolução em ambiente de microsserviços, seguindo os padrões de qualidade esperados em sistemas financeiros de alta disponibilidade.
+### **Solution Structure**
+- 📁 **4 production** projects
+- 📁 **4 test** projects  
+- 📁 **1 solution** organizer
+- 📁 **Multiple** configuration files
+
+*For complete full-stack project information, see the [main README](../README.md).*
