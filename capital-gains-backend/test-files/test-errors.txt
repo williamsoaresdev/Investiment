@@ -1,0 +1,16 @@
+# Test file with operations that should generate errors
+# Valid operations
+[{"operation":"buy","unit-cost":10.00,"quantity":100}]
+
+# Invalid operation - negative unit cost
+[{"operation":"buy","unit-cost":-10.00,"quantity":100}]
+
+# Invalid operation - negative quantity  
+[{"operation":"sell","unit-cost":15.00,"quantity":-50}]
+
+# Invalid operation - sell more than owned
+[{"operation":"buy","unit-cost":10.00,"quantity":100},{"operation":"sell","unit-cost":15.00,"quantity":200}]
+
+# Zero values - should be invalid
+[{"operation":"buy","unit-cost":0,"quantity":100}]
+[{"operation":"buy","unit-cost":10.00,"quantity":0}]

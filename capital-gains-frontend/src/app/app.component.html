@@ -10,7 +10,7 @@
     </mat-card-header>
 
     <mat-card-content>
-      <mat-tab-group>
+      <mat-tab-group (selectedTabChange)="onTabChange($event)">
         <mat-tab label="Manual Input">
           <div class="input-section">
             <mat-form-field appearance="outline" class="full-width">
@@ -67,27 +67,96 @@
     </mat-card-actions>
   </mat-card>
 
+  <!-- Results Table -->
   <mat-card class="result-card" *ngIf="taxResults.length > 0">
     <mat-card-header>
-      <mat-card-title>Tax Results</mat-card-title>
-      <mat-card-subtitle>Capital gains tax calculated for each operation period</mat-card-subtitle>
+      <mat-card-title>Calculation Results</mat-card-title>
+      <mat-card-subtitle>Operations and corresponding tax calculations</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
-      <div class="results-grid">
-        <div class="result-item" *ngFor="let result of taxResults; let i = index">
-          <mat-card class="result-month-card">
-            <mat-card-header>
-              <mat-card-title class="month-title">Period {{ i + 1 }}</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="tax-amount">
-                <span class="currency">R$</span>
-                <span class="amount">{{ result.tax | number:'1.2-2' }}</span>
+      <div class="table-container">
+        <table mat-table [dataSource]="tableData" class="results-table">
+          <!-- Operation Number Column -->
+          <ng-container matColumnDef="operationNumber">
+            <th mat-header-cell *matHeaderCellDef>Op. #</th>
+            <td mat-cell *matCellDef="let row" class="operation-number">{{ row.operationNumber }}</td>
+          </ng-container>
+
+          <!-- Operation Column -->
+          <ng-container matColumnDef="operation">
+            <th mat-header-cell *matHeaderCellDef>Operation</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="operation-badge" 
+                    [class.buy-badge]="row.operation === 'buy'" 
+                    [class.sell-badge]="row.operation === 'sell'"
+                    [class.scenario-badge]="row.operation.startsWith('Scenario')">
+                {{ row.operation | uppercase }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Unit Cost Column -->
+          <ng-container matColumnDef="unitCost">
+            <th mat-header-cell *matHeaderCellDef>Unit Cost</th>
+            <td mat-cell *matCellDef="let row">
+              <span *ngIf="row.unitCost !== '-'">R$ {{ row.unitCost | number:'1.2-2' }}</span>
+              <span *ngIf="row.unitCost === '-'">{{ row.unitCost }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Quantity Column -->
+          <ng-container matColumnDef="quantity">
+            <th mat-header-cell *matHeaderCellDef>Quantity</th>
+            <td mat-cell *matCellDef="let row">{{ row.quantity }}</td>
+          </ng-container>
+
+          <!-- Total Column -->
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef>Total</th>
+            <td mat-cell *matCellDef="let row">
+              <span *ngIf="row.total !== '-'" class="total-value">R$ {{ row.total | number:'1.2-2' }}</span>
+              <span *ngIf="row.total === '-'">{{ row.total }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Tax Column -->
+          <ng-container matColumnDef="tax">
+            <th mat-header-cell *matHeaderCellDef>Tax</th>
+            <td mat-cell *matCellDef="let row">
+              <span *ngIf="!row.hasError" 
+                    class="tax-value" 
+                    [class.no-tax]="row.tax === 0" 
+                    [class.has-tax]="row.tax > 0">
+                R$ {{ row.tax | number:'1.2-2' }}
+              </span>
+              <span *ngIf="row.hasError" class="error-value">
+                <mat-icon>error</mat-icon>
+                Error
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="status-badge" 
+                    [class.status-error]="row.hasError"
+                    [class.status-exempt]="!row.hasError && row.tax === 0"
+                    [class.status-taxable]="!row.hasError && row.tax > 0">
+                {{ row.status }}
+              </span>
+              <div *ngIf="row.hasError && row.error" class="error-details">
+                <small>{{ row.error }}</small>
               </div>
-            </mat-card-content>
-          </mat-card>
-        </div>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+              [class.error-row]="row.hasError"></tr>
+        </table>
       </div>
     </mat-card-content>
 
@@ -128,6 +197,22 @@
           <mat-icon>content_copy</mat-icon>
           Load Example
         </button>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>Operations with Errors</mat-panel-title>
+        </mat-expansion-panel-header>
+        
+        <pre><code>{{ examples.withErrors }}</code></pre>
+        <button mat-stroked-button (click)="loadExampleWithErrors()" class="load-example-btn">
+          <mat-icon>content_copy</mat-icon>
+          Load Example
+        </button>
+        <p class="test-file-info">
+          <mat-icon>warning</mat-icon>
+          This example contains invalid operations (negative values) to demonstrate error handling.
+        </p>
       </mat-expansion-panel>
 
       <mat-expansion-panel>

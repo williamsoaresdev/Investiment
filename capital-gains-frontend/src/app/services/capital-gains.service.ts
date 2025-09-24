@@ -10,7 +10,23 @@ export interface Operation {
 }
 
 export interface TaxResult {
-  tax: number;
+  tax?: number;
+  error?: string;
+  hasError?: boolean;
+}
+
+export interface ScenarioInfo {
+  scenarioNumber: number;
+  operationCount: number;
+  resultCount: number;
+  operationStartIndex: number;
+  resultStartIndex: number;
+}
+
+export interface CalculationResult {
+  operations: Operation[];
+  taxResults: TaxResult[];
+  scenarios?: ScenarioInfo[];
 }
 
 @Injectable({
@@ -21,7 +37,7 @@ export class CapitalGainsService {
 
   constructor(private http: HttpClient) { }
 
-  calculateCapitalGains(operations: Operation[]): Observable<TaxResult[]> {
+  calculateCapitalGains(operations: Operation[]): Observable<CalculationResult> {
     const httpOptions = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json'
@@ -31,17 +47,25 @@ export class CapitalGainsService {
     const requestBody = { operations: operations };
     return this.http.post<any>(`${this.baseUrl}/calculate`, requestBody, httpOptions)
       .pipe(
-        map((response: any) => response.taxes || [])
+        map((response: any) => ({
+          operations: response.operations || operations,
+          taxResults: response.taxes || [],
+          scenarios: response.scenarios || []
+        }))
       );
   }
 
-  uploadFile(file: File): Observable<TaxResult[]> {
+  uploadFile(file: File): Observable<CalculationResult> {
     const formData = new FormData();
     formData.append('file', file);
 
     return this.http.post<any>(`${this.baseUrl}/upload`, formData)
       .pipe(
-        map((response: any) => response.taxes || [])
+        map((response: any) => ({
+          operations: response.operations || [],
+          taxResults: response.taxes || [],
+          scenarios: response.scenarios || []
+        }))
       );
   }
 

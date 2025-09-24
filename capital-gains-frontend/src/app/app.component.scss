@@ -183,6 +183,135 @@
   }
 }
 
+// Table Styles
+.table-container {
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.results-table {
+  width: 100%;
+  
+  th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+  
+  tr.error-row {
+    background-color: #ffebee !important;
+  }
+  
+  .mat-mdc-cell, .mat-mdc-header-cell {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+}
+
+.operation-number {
+  font-weight: 600;
+  color: #666;
+  text-align: center;
+  font-family: 'Roboto Mono', monospace;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 4px 8px !important;
+}
+
+.operation-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  
+  &.buy-badge {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+  }
+  
+  &.sell-badge {
+    background-color: #fff3e0;
+    color: #d68910;
+  }
+  
+  &.scenario-badge {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+}
+
+.total-value {
+  font-weight: 600;
+  color: #1976d2;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.tax-value {
+  font-weight: 600;
+  font-family: 'Roboto Mono', monospace;
+  
+  &.no-tax {
+    color: #4caf50;
+  }
+  
+  &.has-tax {
+    color: #f44336;
+  }
+}
+
+.error-value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #f44336;
+  font-weight: 500;
+  
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  
+  &.status-error {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  &.status-exempt {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+  }
+  
+  &.status-taxable {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+}
+
+.error-details {
+  margin-top: 4px;
+  
+  small {
+    color: #666;
+    font-style: italic;
+  }
+}
+
 // Responsive design
 @media (max-width: 768px) {
   .container {
@@ -200,6 +329,26 @@
       font-size: 36px;
       width: 36px;
       height: 36px;
+    }
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    
+    .results-table {
+      min-width: 700px;
+    }
+  }
+  
+  .mat-mdc-cell, .mat-mdc-header-cell {
+    padding: 8px 12px;
+    
+    &:first-child {
+      padding-left: 16px;
+    }
+    
+    &:last-child {
+      padding-right: 16px;
     }
   }
 }
@@ -243,5 +392,246 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+// Operations and Results Layout
+.operations-results-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.operations-section,
+.results-section {
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: #333;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// Operations styling
+.operations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.operation-card {
+  background: #f8f9fa;
+  border-left: 4px solid transparent;
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+  }
+
+  .mat-mdc-card-content {
+    padding: 16px;
+  }
+}
+
+.operation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.operation-type {
+  font-weight: 600;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  width: fit-content;
+
+  &.buy-operation {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+    border-left-color: #4caf50;
+  }
+
+  &.sell-operation {
+    background-color: #ffeaa7;
+    color: #d68910;
+    border-left-color: #ff9800;
+  }
+}
+
+.operation-card.buy-operation {
+  border-left-color: #4caf50;
+}
+
+.operation-card.sell-operation {
+  border-left-color: #ff9800;
+}
+
+.operation-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+
+  .quantity {
+    font-weight: 500;
+    color: #555;
+  }
+
+  .unit-cost {
+    color: #666;
+    font-family: 'Roboto Mono', monospace;
+  }
+}
+
+.total-value {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1976d2;
+  font-family: 'Roboto Mono', monospace;
+}
+
+// Results styling
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-tax-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  }
+
+  .mat-mdc-card-content {
+    padding: 20px;
+  }
+}
+
+.tax-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.period-label {
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.result-tax-card .tax-amount {
+  font-size: 28px;
+  font-weight: bold;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  margin: 8px 0;
+
+  &.no-tax {
+    color: #c8e6c9;
+  }
+
+  &.has-tax {
+    color: #ffcdd2;
+  }
+
+  .currency {
+    font-size: 18px;
+    opacity: 0.8;
+  }
+
+  .amount {
+    font-family: 'Roboto Mono', monospace;
+  }
+}
+
+.tax-status {
+  font-size: 12px;
+  font-weight: 500;
+
+  .status-exempt {
+    color: #c8e6c9;
+    background-color: rgba(200, 230, 201, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+
+  .status-taxable {
+    color: #ffcdd2;
+    background-color: rgba(255, 205, 210, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+}
+
+// Fallback results-only layout
+.results-only-container {
+  margin-top: 16px;
+}
+
+// Error styling
+.result-tax-card.error-card {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(244, 67, 54, 0.3);
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 14px;
+  
+  .error-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #ffcdd2;
+  }
+  
+  .error-text {
+    color: #ffcdd2;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.3;
+  }
+}
+
+.tax-status {
+  .status-error {
+    color: #ffcdd2;
+    background-color: rgba(255, 205, 210, 0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 600;
   }
 }

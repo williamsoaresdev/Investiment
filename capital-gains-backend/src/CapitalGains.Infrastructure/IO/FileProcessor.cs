@@ -32,10 +32,14 @@ public class FileProcessor : IFileProcessor
             yield break;
 
         var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        
+        Console.WriteLine($"[FileProcessor] Processing {lines.Length} lines from file");
 
-        foreach (var line in lines)
+        foreach (var (line, index) in lines.Select((line, index) => (line, index)))
         {
             var trimmedLine = line.Trim();
+            
+            Console.WriteLine($"[FileProcessor] Line {index + 1}: '{trimmedLine.Substring(0, Math.Min(50, trimmedLine.Length))}...'");
             
             // Skip empty lines and comments
             if (string.IsNullOrWhiteSpace(trimmedLine) || 
@@ -49,13 +53,19 @@ public class FileProcessor : IFileProcessor
                 trimmedLine.Contains("Case #") ||
                 trimmedLine.Contains("End of file"))
             {
+                Console.WriteLine($"[FileProcessor] Skipping line {index + 1} (comment/metadata)");
                 continue;
             }
 
             // Check if line looks like a JSON array and is valid
             if (IsValidJsonLine(trimmedLine))
             {
+                Console.WriteLine($"[FileProcessor] Found valid JSON line {index + 1}");
                 yield return trimmedLine;
+            }
+            else
+            {
+                Console.WriteLine($"[FileProcessor] Line {index + 1} is not valid JSON");
             }
         }
     }

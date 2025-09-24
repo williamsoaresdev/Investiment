@@ -60,10 +60,10 @@ public class CapitalGainsController : ControllerBase
     /// - Vendas até R$ 20.000,00 não geram impostos
     /// </remarks>
     [HttpPost("calculate")]
-    [ProducesResponseType(typeof(OperationsResponse), 200)]
+    [ProducesResponseType(typeof(CalculationResultResponse), 200)]
     [ProducesResponseType(typeof(string), 400)]
     [ProducesResponseType(typeof(string), 500)]
-    public async Task<ActionResult<OperationsResponse>> CalculateCapitalGains(
+    public async Task<ActionResult<CalculationResultResponse>> CalculateCapitalGains(
         [FromBody] OperationsRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -78,27 +78,119 @@ public class CapitalGainsController : ControllerBase
                 return BadRequest("Operations list cannot be empty");
             }
 
-            // Convert DTOs to domain models
-            var operations = request.Operations.Select(dto => dto.ToDomain()).ToList();
+            // Process each operation individually to handle errors
+            var allOperations = new List<OperationDto>();
+            var allResults = new List<EnhancedTaxResultDto>();
+            
+            // Convert request operations to a list for processing
+            var requestOperations = request.Operations.ToList();
+            allOperations.AddRange(requestOperations);
 
-            // Validate operations
-            var invalidOperations = operations.Where(op => !op.IsValid).ToList();
-            if (invalidOperations.Any())
+            try
             {
-                return BadRequest("All operations must have positive unit cost and quantity");
+                // Try to convert DTOs to domain models
+                var operations = new List<Domain.Models.Operation>();
+                var hasInvalidOperations = false;
+
+                foreach (var dto in requestOperations)
+                {
+                    try
+                    {
+                        var operation = dto.ToDomain();
+                        if (!operation.IsValid)
+                        {
+                            allResults.Add(EnhancedTaxResultDto.FromError("Invalid operation: negative values not allowed"));
+                            hasInvalidOperations = true;
+                        }
+                        else
+                        {
+                            operations.Add(operation);
+                            allResults.Add(null!); // Placeholder for valid operations
+                        }
+                    }
+                    catch (ArgumentException)
+                    {
+                        allResults.Add(EnhancedTaxResultDto.FromError("Invalid operation type"));
+                        hasInvalidOperations = true;
+                    }
+                }
+
+                // If we have valid operations, process them
+                if (operations.Any() && !hasInvalidOperations)
+                {
+                    var results = await _processCapitalGainsUseCase.ExecuteAsync(operations, cancellationToken);
+                    
+                    // Replace placeholders with actual results
+                    var resultIndex = 0;
+                    for (int i = 0; i < allResults.Count; i++)
+                    {
+                        if (allResults[i] == null)
+                        {
+                            allResults[i] = EnhancedTaxResultDto.FromDomain(results.Results[resultIndex]);
+                            resultIndex++;
+                        }
+                    }
+                }
+                else if (operations.Any())
+                {
+                    // Process valid operations even if some are invalid
+                    try
+                    {
+                        var results = await _processCapitalGainsUseCase.ExecuteAsync(operations, cancellationToken);
+                        
+                        // Map results back to the correct positions
+                        var resultIndex = 0;
+                        for (int i = 0; i < allResults.Count; i++)
+                        {
+                            if (allResults[i] == null && resultIndex < results.Results.Count())
+                            {
+                                allResults[i] = EnhancedTaxResultDto.FromDomain(results.Results.ElementAt(resultIndex));
+                                resultIndex++;
+                            }
+                            else if (allResults[i] == null)
+                            {
+                                allResults[i] = EnhancedTaxResultDto.FromError("Processing error");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Error processing valid operations");
+                        // Fill remaining null results with errors
+                        for (int i = 0; i < allResults.Count; i++)
+                        {
+                            if (allResults[i] == null)
+                            {
+                                allResults[i] = EnhancedTaxResultDto.FromError("Processing error: " + ex.Message);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // All operations are invalid - results are already set above
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing operations");
+                // Fill all results with errors if something goes wrong
+                allResults.Clear();
+                for (int i = 0; i < requestOperations.Count; i++)
+                {
+                    allResults.Add(EnhancedTaxResultDto.FromError("Processing error: " + ex.Message));
+                }
             }
 
-            // Process operations
-            var results = await _processCapitalGainsUseCase.ExecuteAsync(operations, cancellationToken);
-
             // Convert results to response DTOs
-            var response = new OperationsResponse
+            var response = new CalculationResultResponse
             {
-                Taxes = results.Results.Select(TaxResultDto.FromDomain)
+                Operations = allOperations,
+                Taxes = allResults
             };
 
             _logger.LogInformation("Successfully processed {OperationCount} operations, generated {ResultCount} tax results",
-                operations.Count, results.Count);
+                allOperations.Count, allResults.Count);
 
             return Ok(response);
         }
@@ -140,10 +232,10 @@ public class CapitalGainsController : ControllerBase
     /// Cada linha do arquivo TXT deve conter um array JSON válido com operações.
     /// </remarks>
     [HttpPost("upload")]
-    [ProducesResponseType(typeof(OperationsResponse), 200)]
+    [ProducesResponseType(typeof(CalculationResultResponse), 200)]
     [ProducesResponseType(typeof(string), 400)]
     [ProducesResponseType(typeof(string), 500)]
-    public async Task<ActionResult<OperationsResponse>> UploadFile(
+    public async Task<ActionResult<CalculationResultResponse>> UploadFile(
         IFormFile file,
         CancellationToken cancellationToken = default)
     {
@@ -189,55 +281,135 @@ public class CapitalGainsController : ControllerBase
 
             _logger.LogInformation("Found {ValidLineCount} valid JSON lines in uploaded file", validJsonLines.Count);
 
-            // Process file content
-            var allResults = new List<Domain.Models.TaxResult>();
+            // Process file content - each line is processed independently
+            var allResults = new List<EnhancedTaxResultDto>();
+            var allOperations = new List<OperationDto>();
+            var scenarios = new List<ScenarioInfo>();
 
-            foreach (var line in validJsonLines)
+            _logger.LogInformation("Processing {LineCount} JSON lines from file", validJsonLines.Count);
+            
+            foreach (var (line, lineIndex) in validJsonLines.Select((line, index) => (line, index)))
             {
                 try
                 {
+                    _logger.LogInformation("Processing line #{LineIndex}: {Line}", lineIndex + 1, line);
+                    
                     // Parse operations from JSON line
                     var operations = _jsonSerializer.DeserializeOperations(line);
                     
                     // Validate operations
                     var operationsList = operations.ToList();
                     var invalidOperations = operationsList.Where(op => !op.IsValid).ToList();
+                    
+                    // Record scenario info
+                    var scenarioInfo = new ScenarioInfo
+                    {
+                        ScenarioNumber = lineIndex + 1,
+                        OperationCount = operationsList.Count,
+                        OperationStartIndex = allOperations.Count,
+                        ResultStartIndex = allResults.Count
+                    };
+                    
+                    // Add operations to the response regardless of validity
+                    allOperations.AddRange(operationsList.Select(OperationDto.FromDomain));
+                    
                     if (invalidOperations.Any())
                     {
                         _logger.LogWarning("Invalid operations found in line: {Line}", line);
-                        continue; // Skip invalid operations instead of failing
+                        
+                        // Add error results for each operation in this line
+                        for (int i = 0; i < operationsList.Count; i++)
+                        {
+                            if (!operationsList[i].IsValid)
+                            {
+                                allResults.Add(EnhancedTaxResultDto.FromError("Invalid operation: negative values not allowed"));
+                            }
+                            else
+                            {
+                                // Still process valid operations in the same line
+                                allResults.Add(EnhancedTaxResultDto.FromDomain(new Domain.Models.TaxResult(0.0m)));
+                            }
+                        }
+                        
+                        // Complete scenario info
+                        scenarioInfo.ResultCount = operationsList.Count;
+                        scenarios.Add(scenarioInfo);
+                        continue;
                     }
 
-                    // Process operations
+                    // Process operations (each line independently)
                     var results = await _processCapitalGainsUseCase.ExecuteAsync(operationsList, cancellationToken);
-                    allResults.AddRange(results.Results);
+                    
+                    // Add successful results
+                    allResults.AddRange(results.Results.Select(EnhancedTaxResultDto.FromDomain));
+                    
+                    // Complete scenario info
+                    scenarioInfo.ResultCount = results.Results.Count();
+                    scenarios.Add(scenarioInfo);
+                    
+                    _logger.LogInformation("Successfully processed {OperationCount} operations from line #{LineIndex} with {ResultCount} results", 
+                        operationsList.Count, lineIndex + 1, results.Results.Count());
                 }
                 catch (ArgumentException ex) when (ex.Message.Contains("Invalid operation sequence"))
                 {
-                    _logger.LogWarning(ex, "Skipping invalid operation sequence in line: {Line}", line);
-                    continue; // Skip lines with invalid operation sequences
+                    _logger.LogWarning(ex, "Invalid operation sequence in line: {Line}", line);
+                    
+                    // Try to parse operations anyway to show the error
+                    try
+                    {
+                        var operations = _jsonSerializer.DeserializeOperations(line);
+                        var operationsList = operations.ToList();
+                        allOperations.AddRange(operationsList.Select(OperationDto.FromDomain));
+                        for (int i = 0; i < operationsList.Count; i++)
+                        {
+                            allResults.Add(EnhancedTaxResultDto.FromError("Invalid operation sequence"));
+                        }
+                    }
+                    catch
+                    {
+                        _logger.LogWarning("Could not parse operations from line with sequence error: {Line}", line);
+                    }
+                    continue;
                 }
                 catch (InvalidOperationException ex) when (ex.Message.Contains("Cannot sell more stocks than owned"))
                 {
-                    _logger.LogWarning(ex, "Skipping line with invalid sell operation (insufficient stocks): {Line}", line);
-                    continue; // Skip lines with invalid sell operations
+                    _logger.LogWarning(ex, "Invalid sell operation (insufficient stocks) in line: {Line}", line);
+                    
+                    // Try to parse operations anyway to show the error
+                    try
+                    {
+                        var operations = _jsonSerializer.DeserializeOperations(line);
+                        var operationsList = operations.ToList();
+                        allOperations.AddRange(operationsList.Select(OperationDto.FromDomain));
+                        for (int i = 0; i < operationsList.Count; i++)
+                        {
+                            allResults.Add(EnhancedTaxResultDto.FromError("Cannot sell more stocks than owned"));
+                        }
+                    }
+                    catch
+                    {
+                        _logger.LogWarning("Could not parse operations from line with sell error: {Line}", line);
+                    }
+                    continue;
                 }
                 catch (ArgumentException ex)
                 {
-                    _logger.LogWarning(ex, "Skipping invalid JSON line: {Line}", line);
-                    continue; // Skip invalid lines instead of failing
+                    _logger.LogWarning(ex, "Invalid JSON in line: {Line}", line);
+                    continue; // Skip invalid lines that can't be parsed
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Unexpected error processing line, skipping: {Line}", line);
+                    _logger.LogWarning(ex, "Unexpected error processing line: {Line}", line);
                     continue; // Skip any other errors
                 }
             }
 
             // Convert results to response DTOs
-            var response = new OperationsResponse
+            var response = new CalculationResultResponse
             {
-                Taxes = allResults.Select(TaxResultDto.FromDomain)
+                Operations = allOperations,
+                Taxes = allResults,
+                Scenarios = scenarios
             };
 
             _logger.LogInformation("Successfully processed file {FileName} with {LineCount} valid lines, generated {ResultCount} tax results",

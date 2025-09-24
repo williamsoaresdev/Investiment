@@ -8,9 +8,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTableModule } from '@angular/material/table';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { CapitalGainsService, Operation, TaxResult } from './services/capital-gains.service';
+import { CapitalGainsService, Operation, TaxResult, CalculationResult, ScenarioInfo } from './services/capital-gains.service';
 
 @Component({
   selector: 'app-root',
@@ -25,7 +26,8 @@ import { CapitalGainsService, Operation, TaxResult } from './services/capital-ga
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatTableModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -38,7 +40,66 @@ export class AppComponent {
   selectedFileName = '';
   isDragOver = false;
   taxResults: TaxResult[] = [];
+  operations: Operation[] = [];
+  scenarios: ScenarioInfo[] = [];
   isCalculating = false;
+
+  // Table configuration
+  displayedColumns: string[] = ['operationNumber', 'operation', 'unitCost', 'quantity', 'total', 'tax', 'status'];
+  
+  get tableData(): any[] {
+    const data: any[] = [];
+    
+    // Combine operations and tax results
+    this.operations.forEach((op, index) => {
+      const taxResult = this.taxResults[index] || { tax: 0, hasError: false, error: null };
+      data.push({
+        operationNumber: index + 1,
+        operation: op.operation,
+        unitCost: op['unit-cost'],
+        quantity: op.quantity,
+        total: (op['unit-cost'] * op.quantity),
+        tax: taxResult.tax,
+        hasError: taxResult.hasError,
+        error: taxResult.error,
+        status: this.getStatusText(taxResult)
+      });
+    });
+
+    // If no operations but we have tax results (from file scenarios)
+    if (this.operations.length === 0 && this.taxResults.length > 0) {
+      this.taxResults.forEach((result, index) => {
+        data.push({
+          operationNumber: index + 1,
+          operation: 'Scenario ' + (index + 1),
+          unitCost: '-',
+          quantity: '-',
+          total: '-',
+          tax: result.tax,
+          hasError: result.hasError,
+          error: result.error,
+          status: this.getStatusText(result)
+        });
+      });
+    }
+
+    return data;
+  }
+
+  getStatusText(result: TaxResult): string {
+    if (result.hasError) return 'Error';
+    if (result.tax === 0) return 'Tax Exempt';
+    return 'Taxable';
+  }
+
+  onTabChange(event: any): void {
+    // Clear all data when switching tabs
+    this.operationsJson = '';
+    this.selectedFileName = '';
+    this.taxResults = [];
+    this.operations = [];
+    this.scenarios = [];
+  }
 
   examples = {
     basic: `[
@@ -70,7 +131,12 @@ stdin:
 stdout:
 [{"tax":0.0},{"tax":10000.0}]
 
-# Only the JSON lines above will be processed`
+# Only the JSON lines above will be processed`,
+    withErrors: `[
+  {"operation":"buy", "unit-cost":10.00, "quantity": 100},
+  {"operation":"sell", "unit-cost":-15.00, "quantity": 50},
+  {"operation":"buy", "unit-cost":20.00, "quantity": -10}
+]`
   };
 
   onFileSelected(event: Event): void {
@@ -98,15 +164,23 @@ stdout:
     this.isCalculating = true;
     
     this.capitalGainsService.uploadFile(file).subscribe({
-      next: (results: TaxResult[]) => {
-        this.taxResults = results;
+      next: (result: CalculationResult) => {
+        this.operations = result.operations;
+        this.taxResults = result.taxResults;
+        this.scenarios = result.scenarios || [];
         this.isCalculating = false;
-        console.log('File upload and processing successful:', results);
+        console.log('File upload and processing successful:', result);
       },
       error: (error: any) => {
         console.error('Error uploading file:', error);
         this.isCalculating = false;
-        alert('Error processing file. Please check the file format and try again.');
+        
+        // Provide more specific error messages
+        if (error.status === 400) {
+          alert('File processing error: ' + (error.error || 'Invalid file format or content.'));
+        } else {
+          alert('Error processing file. Please check the file format and try again.');
+        }
       }
     });
   }
@@ -125,18 +199,27 @@ stdout:
       
       // Call the real .NET backend API
       this.capitalGainsService.calculateCapitalGains(operations).subscribe({
-        next: (results) => {
-          this.taxResults = results;
+        next: (result) => {
+          this.operations = result.operations;
+          this.taxResults = result.taxResults;
+          this.scenarios = result.scenarios || [];
           this.isCalculating = false;
-          console.log('Tax calculation successful:', results);
+          console.log('Tax calculation successful:', result);
         },
         error: (error) => {
           console.error('Error calling backend API:', error);
           this.isCalculating = false;
-          // Fallback to simulation if API fails
-          console.log('Falling back to local simulation...');
-          this.taxResults = this.capitalGainsService.simulateCalculation(operations);
-          alert('API connection failed. Using local calculation as fallback.');
+          
+          // Check if it's a validation error (400)
+          if (error.status === 400) {
+            alert('Invalid operations detected: ' + (error.error || 'Please check your input data.'));
+          } else {
+            // Fallback to simulation for other errors
+            console.log('Falling back to local simulation...');
+            this.taxResults = this.capitalGainsService.simulateCalculation(operations);
+            this.operations = operations; // Store the input operations
+            alert('API connection failed. Using local calculation as fallback.');
+          }
         }
       });
       
@@ -151,10 +234,17 @@ stdout:
     this.operationsJson = '';
     this.selectedFileName = '';
     this.taxResults = [];
+    this.operations = [];
+    this.scenarios = [];
   }
 
   loadExample(exampleType: 'basic' | 'complex'): void {
     this.operationsJson = this.examples[exampleType];
+    this.selectedFileName = '';
+  }
+
+  loadExampleWithErrors(): void {
+    this.operationsJson = this.examples.withErrors;
     this.selectedFileName = '';
   }
 

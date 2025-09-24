@@ -32,6 +32,19 @@ public class OperationDto
 
         return new Operation(operationType, UnitCost, Quantity);
     }
+
+    /// <summary>
+    /// Creates DTO from domain model
+    /// </summary>
+    public static OperationDto FromDomain(Operation operation)
+    {
+        return new OperationDto
+        {
+            Operation = operation.Type.ToString().ToLowerInvariant(),
+            UnitCost = operation.UnitCost,
+            Quantity = operation.Quantity
+        };
+    }
 }
 
 /// <summary>

@@ -1,0 +1,14 @@
+# Test file with multiple scenarios
+# Each line should be processed independently
+
+# Scenario 1 - Simple buy/sell
+[{"operation":"buy","unit-cost":10.00,"quantity":100},{"operation":"sell","unit-cost":15.00,"quantity":50}]
+
+# Scenario 2 - With errors (negative values)
+[{"operation":"buy","unit-cost":-10.00,"quantity":100},{"operation":"sell","unit-cost":15.00,"quantity":50}]
+
+# Scenario 3 - Large transaction (taxable)
+[{"operation":"buy","unit-cost":10.00,"quantity":10000},{"operation":"sell","unit-cost":20.00,"quantity":5000}]
+
+# Scenario 4 - Mix of valid and invalid
+[{"operation":"buy","unit-cost":10.00,"quantity":100},{"operation":"sell","unit-cost":-15.00,"quantity":50}]
