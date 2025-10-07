@@ -189,4 +189,49 @@ public class CapitalGainsCalculatorTests
 
         results.Count.Should().Be(0);
     }
+
+    [Fact]
+    public void ProcessOperations_SellMoreThanOwned_ShouldReturnError()
+    {
+        // Input #1: [{"operation":"buy", "unit-cost":10, "quantity": 10000}, {"operation":"sell", "unit-cost":20, "quantity": 11000}]
+        // Output #1: [{"tax":0}, {"error":"Can't sell more stocks than you have"}]
+        var operations = new[]
+        {
+            new Operation(OperationType.Buy, 10.00m, 10000),
+            new Operation(OperationType.Sell, 20.00m, 11000)
+        };
+
+        var results = _calculator.ProcessOperations(operations);
+
+        results.Count.Should().Be(2);
+        results[0].Tax.Should().Be(0.0m);
+        results[0].HasError.Should().BeFalse();
+        results[1].HasError.Should().BeTrue();
+        results[1].Error.Should().Be("Can't sell more stocks than you have");
+        results[1].Tax.Should().Be(0.0m);
+    }
+
+    [Fact]
+    public void ProcessOperations_SellMoreThanOwnedThenValidSell_ShouldContinueProcessing()
+    {
+        // Input #2: [{"operation":"buy", "unit-cost": 10, "quantity": 10000}, {"operation":"sell", "unit-cost":20, "quantity": 11000}, {"operation":"sell", "unit-cost": 20, "quantity": 5000}]
+        // Output #2: [{"tax":0}, {"error":"Can't sell more stocks than you have"}, {"tax":10000}]
+        var operations = new[]
+        {
+            new Operation(OperationType.Buy, 10.00m, 10000),
+            new Operation(OperationType.Sell, 20.00m, 11000),
+            new Operation(OperationType.Sell, 20.00m, 5000)
+        };
+
+        var results = _calculator.ProcessOperations(operations);
+
+        results.Count.Should().Be(3);
+        results[0].Tax.Should().Be(0.0m);
+        results[0].HasError.Should().BeFalse();
+        results[1].HasError.Should().BeTrue();
+        results[1].Error.Should().Be("Can't sell more stocks than you have");
+        results[1].Tax.Should().Be(0.0m);
+        results[2].Tax.Should().Be(10000.0m);
+        results[2].HasError.Should().BeFalse();
+    }
 }

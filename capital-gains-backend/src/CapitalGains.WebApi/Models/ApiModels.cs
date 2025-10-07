@@ -52,6 +52,15 @@ public class EnhancedTaxResultDto
 
     public static EnhancedTaxResultDto FromDomain(TaxResult taxResult)
     {
+        if (taxResult.HasError)
+        {
+            return new EnhancedTaxResultDto 
+            { 
+                Error = taxResult.Error, 
+                HasError = true 
+            };
+        }
+
         return new EnhancedTaxResultDto 
         { 
             Tax = taxResult.RoundedTax, 

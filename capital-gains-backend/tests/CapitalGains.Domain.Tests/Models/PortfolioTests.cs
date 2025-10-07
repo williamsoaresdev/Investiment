@@ -149,15 +149,19 @@ public class PortfolioTests
     }
 
     [Fact]
-    public void Sell_MoreThanOwned_ShouldThrowException()
+    public void Sell_MoreThanOwned_ShouldReturnError()
     {
         // Arrange
         var portfolio = new Portfolio();
         portfolio.Buy(10.00m, 100);
 
-        // Act & Assert
-        var action = () => portfolio.Sell(15.00m, 101);
-        action.Should().Throw<InvalidOperationException>();
+        // Act
+        var result = portfolio.Sell(15.00m, 101);
+
+        // Assert
+        result.HasError.Should().BeTrue();
+        result.Error.Should().Be("Can't sell more stocks than you have");
+        result.Tax.Should().Be(0m);
     }
 
     [Fact]

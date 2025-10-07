@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Encodings.Web;
 using CapitalGains.Domain.Models;
 using CapitalGains.Infrastructure.Serialization;
 
@@ -17,7 +18,8 @@ public class JsonSerializer : IJsonSerializer
     {
         PropertyNamingPolicy = JsonNamingPolicy.KebabCaseLower,
         WriteIndented = false,
-        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString
+        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
     public IEnumerable<Operation> DeserializeOperations(string json)

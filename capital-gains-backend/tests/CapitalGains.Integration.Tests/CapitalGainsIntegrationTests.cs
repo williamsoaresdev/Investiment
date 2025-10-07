@@ -252,4 +252,43 @@ public class CapitalGainsIntegrationTests
 
         outputJson.Should().Be(expectedJson);
     }
+
+    [Fact]
+    public async Task ProcessCapitalGains_SellMoreThanOwned_ShouldReturnError()
+    {
+        // Input #1: [{"operation":"buy", "unit-cost":10, "quantity": 10000}, {"operation":"sell", "unit-cost":20, "quantity": 11000}]
+        // Output #1: [{"tax":0}, {"error":"Can't sell more stocks than you have"}]
+        var inputJson = """
+            [{"operation":"buy", "unit-cost":10, "quantity": 10000},
+            {"operation":"sell", "unit-cost":20, "quantity": 11000}]
+            """;
+
+        var expectedJson = """[{"tax":0.0},{"error":"Can't sell more stocks than you have"}]""";
+
+        var operations = _jsonSerializer.DeserializeOperations(inputJson);
+        var results = await _useCase.ExecuteAsync(operations);
+        var outputJson = _jsonSerializer.SerializeTaxResults(results);
+
+        outputJson.Should().Be(expectedJson);
+    }
+
+    [Fact]
+    public async Task ProcessCapitalGains_SellMoreThanOwnedThenValidSell_ShouldContinueProcessing()
+    {
+        // Input #2: [{"operation":"buy", "unit-cost": 10, "quantity": 10000}, {"operation":"sell", "unit-cost":20, "quantity": 11000}, {"operation":"sell", "unit-cost": 20, "quantity": 5000}]
+        // Output #2: [{"tax":0}, {"error":"Can't sell more stocks than you have"}, {"tax":10000}]
+        var inputJson = """
+            [{"operation":"buy", "unit-cost": 10, "quantity": 10000},
+            {"operation":"sell", "unit-cost":20, "quantity": 11000},
+            {"operation":"sell", "unit-cost": 20, "quantity": 5000}]
+            """;
+
+        var expectedJson = """[{"tax":0.0},{"error":"Can't sell more stocks than you have"},{"tax":10000.0}]""";
+
+        var operations = _jsonSerializer.DeserializeOperations(inputJson);
+        var results = await _useCase.ExecuteAsync(operations);
+        var outputJson = _jsonSerializer.SerializeTaxResults(results);
+
+        outputJson.Should().Be(expectedJson);
+    }
 }

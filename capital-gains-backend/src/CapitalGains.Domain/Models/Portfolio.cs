@@ -40,13 +40,14 @@ public class Portfolio
             throw new ArgumentException("Unit cost and quantity must be positive");
         
         if (quantity > _quantity)
-            throw new InvalidOperationException("Cannot sell more stocks than owned");
+            return new TaxResult("Can't sell more stocks than you have");
 
         var totalOperationValue = unitCost * quantity;
         var totalCostBasis = _averagePrice * quantity;
         var profitOrLoss = totalOperationValue - totalCostBasis;
         
-        _quantity -= quantity;        // If no stocks left, reset average price
+        _quantity -= quantity;        
+        // If no stocks left, reset average price
         if (_quantity == 0)
             _averagePrice = 0m;
 

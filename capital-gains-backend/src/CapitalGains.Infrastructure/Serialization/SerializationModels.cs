@@ -41,10 +41,20 @@ public class OperationDto
 public class TaxResultDto
 {
     [JsonPropertyName("tax")]
-    public decimal Tax { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? Tax { get; set; }
+
+    [JsonPropertyName("error")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Error { get; set; }
 
     public static TaxResultDto FromDomain(TaxResult taxResult)
     {
+        if (taxResult.HasError)
+        {
+            return new TaxResultDto { Error = taxResult.Error };
+        }
+
         return new TaxResultDto { Tax = taxResult.RoundedTax };
     }
 }

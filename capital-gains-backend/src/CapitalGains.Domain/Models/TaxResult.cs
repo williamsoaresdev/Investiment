@@ -1,7 +1,23 @@
 namespace CapitalGains.Domain.Models;
 
-public readonly record struct TaxResult(decimal Tax)
+public readonly record struct TaxResult
 {
+    public decimal Tax { get; }
+    public string? Error { get; }
+    public bool HasError => !string.IsNullOrEmpty(Error);
+
+    public TaxResult(decimal tax)
+    {
+        Tax = tax;
+        Error = null;
+    }
+
+    public TaxResult(string error)
+    {
+        Tax = 0m;
+        Error = error;
+    }
+
     public decimal RoundedTax => Math.Round(Tax, 2, MidpointRounding.AwayFromZero);
 }
 
